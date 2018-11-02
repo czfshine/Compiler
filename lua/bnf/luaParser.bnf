@@ -1,0 +1,95 @@
+/*官方解释器所用语法*/
+mainfunc ::= block
+block::= statlist
+statlist ::=  { statement [';'] }
+                              /*first token*/
+
+statement ::=  ';' |          /* ;  */
+            ifstat |          /* if */
+            whilestat |       /* while */
+            'do' block 'end' |/* do    */
+            forstat|          /* for */
+            repeatstat |      /* repeat */
+            funcstat|         /* function */
+            localfunc|        /* local function ! */
+            localstat|        /* local [other]  !*/
+            lablestat|        /* ::   */
+            retstat |         /* return */
+            breakstat|        /* break */
+            'goto' Name|      /* goto */
+            exprstat          /* [other] !*/
+ifstat ::= 'if' cond 'then' block {'elseif' cond 'then' block} ['else' block] 'end'
+whilestat ::='while' cond 'do' block 'end'
+
+forstat ::= 'for' (fornum    /* [next next] '='*/
+                | forlist)   /* [other] */
+            'end'
+
+fornum ::= Name '=' expr ',' expr [ ',' expr] forbody
+
+forlist ::= Name {',' Name} 'in' explist forbody
+
+forbody ::= 'do' block
+repeatstat::= 'repeat' block 'until' cond
+
+funcstat ::= 'function' funcname body
+funcname ::= Name {fieldsel} [':' Name]
+body     ::= '(' parlist ')' block 'end'
+parlist  ::= [ param { ',' param} ]
+param    ::= Name | '...'
+
+localfunc ::= 'local' 'function' Name body
+localstat ::= 'local' Name {',' Name} [ '=' explist]
+
+lablestat ::= '::' Name '::'
+
+retstat   ::= 'return ' [explist ] [ ';']
+
+breakstat ::= 'break'
+exprstat ::= func | assignment
+
+assignment ::= suffixedexp ',' suffixedexp assignment | '=' explist
+func ::= suffixedexp
+
+suffixedexp ::= primaryexp { dotfieldsel |  /* '.'*/
+                                index |  /*[ */
+                                ':' Name funcargs | /* :*/
+                                funcargs } /* (*/
+dotfieldsel ::= '.'  Name
+fieldsel ::= ['.' | ':' ] Name
+
+index   ::= '[' expr ']'
+funcargs ::= '(' [explist] ')' |
+             constructor | /* {*/
+              String
+
+constructor ::= '{' [ field { sep field } [sep] ] '}'
+
+primaryexp  ::= Name | '(' expr ')'
+
+
+sep ::= ',' | ';'
+field ::=  recfield | /* [next next] '=' */
+                listfield
+
+listfield ::= expr
+recfield ::=  (Name |
+                index )  /* [*/
+            '=' expr
+cond   ::=expr
+explist ::=expr {',' expr}
+
+expr ::= subexpr
+
+subexpr ::= (simpleexp | unop subexpr) { binop subexpr }
+simpleexp ::= Float | Int | String | 'nil' | 'true' | 'false' | '...' |
+                  constructor | /*{*/
+                  'function' body |
+                  suffixedexp
+
+binop ::=  '+' | '-' | '*' | '/' | '//' | '^' | '%' |
+   '&' | '~' | '|' | '>>' | '<<' | '..' |
+   '<' | '<=' | '>' | '>=' | '==' | '~=' |
+   'and' | 'or'
+
+unop ::= '-' | 'not' | '#' | '~'
